@@ -104,6 +104,7 @@ _.extend( BehavioralFsm.prototype, {
 		var stateObj = this.states[ currentState ];
 		var handlerName;
 		var handler;
+		var wildcardStateHandler;
 		var isCatchAll = false;
 		var child;
 		var result;
@@ -121,9 +122,10 @@ _.extend( BehavioralFsm.prototype, {
 				if ( inputDef.ticket && this.pendingDelegations[ inputDef.ticket ] ) {
 					delete this.pendingDelegations[ inputDef.ticket ];
 				}
+				wildcardStateHandler = ( this.states["*"] != null && this.states["*"][ inputDef.inputType ] );
 				handlerName = stateObj[ inputDef.inputType ] ? inputDef.inputType : "*";
-				isCatchAll = ( handlerName === "*" );
-				handler = ( stateObj[ handlerName ] || this[ handlerName ] ) || this[ "*" ];
+				isCatchAll = ( handlerName === "*" && !wildcardStateHandler );
+				handler = ( stateObj[ handlerName ] || wildcardStateHandler || this[ "*" ] );
 				action = clientMeta.state + "." + handlerName;
 				clientMeta.currentAction = action;
 				var eventPayload = this.buildEventPayload(
@@ -131,6 +133,7 @@ _.extend( BehavioralFsm.prototype, {
 					{ inputType: inputDef.inputType, delegated: inputDef.delegated, ticket: inputDef.ticket }
 				);
 				if ( !handler ) {
+					/* TODO: Call parent(s) directly instead, to support return value propagation when moving down and back up the chain of children again. */
 					this.emit( events.NO_HANDLER, _.extend( { args: args }, eventPayload ) );
 				} else {
 					this.emit( events.HANDLING, eventPayload );
