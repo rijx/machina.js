@@ -42,6 +42,11 @@ _.extend( BehavioralFsm.prototype, {
 			}
 
 			child = newStateObj._child && newStateObj._child.instance;
+
+			if ( child.ensureClientMeta == null ) {
+				throw new Error( "Child FSM is not a valid machina.js FSM instance" );
+			}
+
 			this.hierarchy[ child.namespace ] = utils.listenToChild( this, child );
 		}
 
