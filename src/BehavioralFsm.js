@@ -165,6 +165,7 @@ _.extend( BehavioralFsm.prototype, {
 		var newStateObj = this.states[ newState ];
 		var child;
 		var args = utils.getLeaklessArgs( arguments ).slice( 2 );
+		var result;
 		if ( !clientMeta.inExitHandler && newState !== curState ) {
 			if ( newStateObj ) {
 				child = this.configForState( newState, true );
@@ -183,7 +184,7 @@ _.extend( BehavioralFsm.prototype, {
 				} );
 				this.emit( events.TRANSITION, eventPayload );
 				if ( newStateObj._onEnter ) {
-					newStateObj._onEnter.apply( this, this.getSystemHandlerArgs( args, client ) );
+					result = newStateObj._onEnter.apply( this, this.getSystemHandlerArgs( args, client ) );
 				}
 				this.emit( events.TRANSITIONED, eventPayload );
 				if ( child ) {
@@ -193,7 +194,7 @@ _.extend( BehavioralFsm.prototype, {
 				if ( clientMeta.targetReplayState === newState ) {
 					this.processQueue( client, events.NEXT_TRANSITION );
 				}
-				return;
+				return result;
 			}
 			this.emit( events.INVALID_STATE, this.buildEventPayload( client, {
 				state: clientMeta.state,
